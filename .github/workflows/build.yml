@@ -22,13 +22,10 @@ jobs:
       - name: Install Android SDK packages
         run: |
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-
           if [ ! -x "$SDKMANAGER" ]; then
             SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)
           fi
-
           echo "Using sdkmanager: $SDKMANAGER"
-
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
@@ -38,10 +35,11 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build APK
+        working-directory: KodiAutoStart
         run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: KodiAutoStart-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: KodiAutoStart/app/build/outputs/apk/debug/app-debug.apk
