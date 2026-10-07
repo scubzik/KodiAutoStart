@@ -1,136 +1,22 @@
 package pl.mp.kodiautostart;
-
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 public class MainActivity extends Activity {
-    private static final int[] DELAYS = {0, 3000, 5000, 10000};
-
-    private Button toggleButton;
-    private Button delayButton;
-    private TextView statusText;
-    private SharedPreferences prefs;
-    private ComponentName receiverComponent;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        prefs = getSharedPreferences("settings", Context.MODE_PRIVATE);
-        receiverComponent = new ComponentName(this, BootReceiver.class);
-
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setGravity(Gravity.CENTER);
-        root.setPadding(dp(48), dp(36), dp(48), dp(36));
-        root.setBackgroundColor(Color.rgb(17, 17, 17));
-
-        TextView title = new TextView(this);
-        title.setText("Kodi AutoStart");
-        title.setTextColor(Color.WHITE);
-        title.setTextSize(28);
-        title.setGravity(Gravity.CENTER);
-        root.addView(title, params(-1, -2, 0, 0, 0, dp(18)));
-
-        statusText = new TextView(this);
-        statusText.setTextColor(Color.LTGRAY);
-        statusText.setTextSize(18);
-        statusText.setGravity(Gravity.CENTER);
-        root.addView(statusText, params(-1, -2, 0, 0, 0, dp(24)));
-
-        toggleButton = new Button(this);
-        toggleButton.setTextSize(20);
-        toggleButton.setMinHeight(dp(64));
-        toggleButton.setOnClickListener(v -> {
-            setAutoStartEnabled(!isAutoStartEnabled());
-            refreshUi();
-        });
-        root.addView(toggleButton, params(dp(420), -2, 0, 0, 0, dp(16)));
-
-        delayButton = new Button(this);
-        delayButton.setTextSize(18);
-        delayButton.setMinHeight(dp(58));
-        delayButton.setOnClickListener(v -> {
-            int current = prefs.getInt("delay_ms", 3000);
-            int next = DELAYS[0];
-            for (int i = 0; i < DELAYS.length; i++) {
-                if (DELAYS[i] == current) {
-                    next = DELAYS[(i + 1) % DELAYS.length];
-                    break;
-                }
-            }
-            prefs.edit().putInt("delay_ms", next).apply();
-            refreshUi();
-        });
-        root.addView(delayButton, params(dp(420), -2, 0, 0, 0, dp(16)));
-
-        Button testButton = new Button(this);
-        testButton.setText("URUCHOM KODI TERAZ");
-        testButton.setTextSize(18);
-        testButton.setMinHeight(dp(58));
-        testButton.setOnClickListener(v -> {
-            try {
-                if (!KodiLauncher.launch(this)) {
-                    Toast.makeText(this, "Nie znaleziono Kodi (org.xbmc.kodi)", Toast.LENGTH_LONG).show();
-                }
-            } catch (Throwable e) {
-                Toast.makeText(this, "Nie udało się uruchomić Kodi", Toast.LENGTH_LONG).show();
-            }
-        });
-        root.addView(testButton, params(dp(420), -2, 0, 0, 0, dp(18)));
-
-        TextView note = new TextView(this);
-        note.setText("Po wyłączeniu autostartu odbiornik BOOT_COMPLETED jest całkowicie wyłączony — aplikacja nie działa w tle.");
-        note.setTextColor(Color.GRAY);
-        note.setTextSize(14);
-        note.setGravity(Gravity.CENTER);
-        root.addView(note, params(dp(560), -2, 0, 0, 0, 0));
-
-        setContentView(root);
-        refreshUi();
-    }
-
-    private void refreshUi() {
-        boolean enabled = isAutoStartEnabled();
-        statusText.setText(enabled ? "Autostart aktywny" : "Autostart wyłączony");
-        statusText.setTextColor(enabled ? Color.rgb(102, 187, 106) : Color.rgb(239, 83, 80));
-        toggleButton.setText(enabled ? "WYŁĄCZ AUTOSTART" : "WŁĄCZ AUTOSTART");
-
-        int delay = prefs.getInt("delay_ms", 3000);
-        delayButton.setText("OPÓŹNIENIE STARTU: " + (delay / 1000) + " s");
-    }
-
-    private boolean isAutoStartEnabled() {
-        int state = getPackageManager().getComponentEnabledSetting(receiverComponent);
-        return state == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
-    }
-
-    private void setAutoStartEnabled(boolean enabled) {
-        getPackageManager().setComponentEnabledSetting(
-                receiverComponent,
-                enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP
-        );
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
-    }
-
-    private LinearLayout.LayoutParams params(int width, int height, int ml, int mt, int mr, int mb) {
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(width, height);
-        p.setMargins(dp(ml), dp(mt), dp(mr), dp(mb));
-        return p;
-    }
+    final long[] boot={0,3000,5000,10000}, wake={0,500,1000,2000,3000};
+    public void onCreate(Bundle b){ super.onCreate(b); LinearLayout r=new LinearLayout(this); r.setOrientation(LinearLayout.VERTICAL); r.setPadding(36,28,36,28); r.setGravity(Gravity.CENTER_HORIZONTAL);
+        TextView t=new TextView(this); t.setText("KodiAutoStart v3 – Ferguson"); t.setTextSize(25); r.addView(t);
+        TextView s=new TextView(this); s.setText("HiSilicon smart-suspend + boot"); s.setTextSize(15); s.setPadding(0,8,0,20); r.addView(s);
+        CheckBox e=new CheckBox(this); e.setText("Włącz autostart Kodi"); e.setTextSize(18); e.setChecked(Prefs.enabled(this)); r.addView(e);
+        CheckBox w=new CheckBox(this); w.setText("Restartuj Kodi po wybudzeniu"); w.setTextSize(18); w.setChecked(Prefs.wakeRestart(this)); r.addView(w);
+        TextView bl=new TextView(this); bl.setText("Opóźnienie po uruchomieniu boxa:"); r.addView(bl); Spinner bs=spin(new String[]{"0 s","3 s","5 s","10 s"}, idx(boot,Prefs.bootDelay(this))); r.addView(bs);
+        TextView wl=new TextView(this); wl.setText("Opóźnienie po wybudzeniu:"); wl.setPadding(0,15,0,0); r.addView(wl); Spinner ws=spin(new String[]{"0 s","0,5 s","1 s","2 s","3 s"}, idx(wake,Prefs.wakeDelay(this))); r.addView(ws);
+        Button save=new Button(this); save.setText("ZAPISZ USTAWIENIA"); save.setOnClickListener(v->{Prefs.setEnabled(this,e.isChecked());Prefs.setWakeRestart(this,w.isChecked());Prefs.setBootDelay(this,boot[bs.getSelectedItemPosition()]);Prefs.setWakeDelay(this,wake[ws.getSelectedItemPosition()]);Toast.makeText(this,"Zapisano",Toast.LENGTH_SHORT).show();}); r.addView(save);
+        Button start=new Button(this); start.setText("URUCHOM KODI TERAZ"); start.setOnClickListener(v->KodiController.launchKodi(this,0)); r.addView(start);
+        Button test=new Button(this); test.setText("TEST: RESTART KODI"); test.setOnClickListener(v->KodiController.restartKodi(this,Prefs.wakeDelay(this))); r.addView(test);
+        TextView n=new TextView(this); n.setText("v3 nasłuchuje: smart_suspend_broadcast_quit / screen oraz standardowych SCREEN_ON / USER_PRESENT / DREAMING_STOPPED.\nNie czyści cache Kodi."); n.setPadding(0,18,0,0); r.addView(n);
+        setContentView(r); }
+    Spinner spin(String[] a,int p){Spinner s=new Spinner(this);ArrayAdapter<String> ad=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,a);s.setAdapter(ad);s.setSelection(p);return s;}
+    int idx(long[] a,long v){for(int i=0;i<a.length;i++)if(a[i]==v)return i;return 0;}
 }

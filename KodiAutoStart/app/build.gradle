@@ -1,24 +1,16 @@
-plugins {
-    id 'com.android.application'
-}
+plugins { id 'com.android.application' }
 
 android {
     namespace 'pl.mp.kodiautostart'
     compileSdk 35
-
     defaultConfig {
         applicationId 'pl.mp.kodiautostart'
-        minSdk 21
+        minSdk 24
         targetSdk 28
-        versionCode 1
-        versionName '1.0'
+        versionCode 3
+        versionName '3.0'
     }
-
     buildTypes {
-        release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        release { minifyEnabled false }
     }
 }
